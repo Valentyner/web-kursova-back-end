@@ -6,24 +6,22 @@ export const create = async (req, res) => {
       title: req.body.title,
       text: req.body.text,
       price: req.body.price,
+      unifiedStateRegister: req.body.unifiedStateRegister,
+      legalEntity: req.body.legalEntity,
     });
 
     const tender = await doc.save();
 
-    // Генеруємо код формату
     const year = new Date().getFullYear();
     const month = (new Date().getMonth() + 1).toString().padStart(2, "0");
     const day = new Date().getDate().toString().padStart(2, "0");
     const count = await TenderModel.countDocuments();
     const objectId = count + 1;
 
-    // Форматуємо код і додаємо його до об'єкта тендера
     const code = `UA-P-${year}-${month}-${day}-00000${objectId}-a`;
 
-    // Додаємо код формату до об'єкта тендера
     tender.code = code;
 
-    // Зберігаємо об'єкт тендера з кодом формату
     const updatedTender = await tender.save();
 
     res.json(updatedTender);
@@ -38,7 +36,7 @@ export const create = async (req, res) => {
 export const getAll = async (req, res) => {
   try {
     const tenders = [];
-    let tendersData = await TenderModel.find().populate("tender").exec();
+    let tendersData = await TenderModel.find();
 
     for (let tender of tendersData) {
       tenders.push({
@@ -47,12 +45,15 @@ export const getAll = async (req, res) => {
         text: tender.text,
         price: tender.price,
         code: tender.code,
-        createdAt: post.createdAt.toLocaleString(),
-        updatedAt: post.updatedAt.toLocaleString(),
+        unifiedStateRegister: tender.unifiedStateRegister,
+        legalEntity: tender.legalEntity,
+        createdAt: tender.createdAt.toLocaleString(),
+        updatedAt: tender.updatedAt.toLocaleString(),
       });
     }
+    res.json(tenders);
   } catch (error) {
-    console.log(err);
+    console.log(error);
     res.status(500).json({
       message: "Статті не знайдено",
     });
@@ -79,3 +80,60 @@ export const getOne = async (req, res) => {
     });
   }
 };
+
+export const remove = async(req, res) => {
+  try {
+      const tenderId = req.params.id;
+
+      TenderModel.findByIdAndDelete({
+          _id: tenderId,
+      }).then(doc => {
+          if(!doc) {
+              return res.status(404).json({
+                  message: "Статтю не знайдено",
+              });
+          }
+
+          res.json({
+              success: true,
+          });
+
+      }).catch(err => {
+          console.log(err);
+          return res.status(404).json({
+              message: "Не вдалося видалити статтю",
+          })
+      })
+  } catch (error) {
+      console.log(err)
+      res.status(500).json({
+          message: "Cтаттю не знайдено",
+      })
+  }
+}
+
+export const update = async (req, res) => {
+  try {
+      const tenderId = req.params.id;
+
+      await TenderModel.findByIdAndUpdate({
+          _id: tenderId,
+      },
+      {
+          title: req.body.title,
+          text: req.body.text,
+          price: req.body.price,
+          unifiedStateRegister: req.body.unifiedStateRegister,
+          legalEntity: req.body.legalEntity,
+      })
+
+      res.json({
+          success: true,
+      })
+  } catch (error) {
+      console.log(err)
+      res.status(500).json({
+          message: "Cтаттю не знайдено",
+      })
+  }
+}

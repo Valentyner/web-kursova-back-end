@@ -19,6 +19,14 @@ const TenderSchema = new mongoose.Schema(
     code: {
       type: String,
     },
+    unifiedStateRegister: {
+      type: String,
+      required: true,
+    },
+    legalEntity: {
+      type: String,
+      required: true,
+    }
   },
   {
     timestamps: true,

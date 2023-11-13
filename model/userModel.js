@@ -13,7 +13,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    avatarUrl: String,
+    status: {
+        type: String,
+        default: "common_user",
+        required: true,
+    }
 },
 {
     timestamps: true,
